@@ -1,0 +1,28 @@
+4 Найти такие товары, которые были куплены более чем одним покупателем, при
+этом все покупатели этих товаров покупали товары только из одной
+подкатегории.
+SELECT P.Name
+FROM Production.Product as P
+INNER JOIN Sales.SalesOrderDetail as SOD
+	ON SOD.ProductID = P.ProductID
+	INNER JOIN Sales.SalesOrderHeader as SOH
+	ON SOH.SalesOrderID = SOD.SalesOrderID
+GROUP BY P.ProductID, P.Name
+HAVING COUNT(DISTINCT SOH.CustomerID) > 1 and COUNT(DISTINCT SOH.CustomerID) = (
+	SELECT COUNT(DISTINCT SOH1.CustomerID)
+	FROM Production.Product as P1
+	INNER JOIN Sales.SalesOrderDetail as SOD1
+	ON SOD1.ProductID = P1.ProductID
+	INNER JOIN Sales.SalesOrderHeader as SOH1
+	ON SOH1.SalesOrderID = SOD1.SalesOrderID
+	WHERE P1.ProductID = P.ProductID and SOH1.CustomerID IN ( --Мы ищем покупателей, которые покупали продукты только из одной подкатегории.
+		SELECT SOH2.CustomerID
+		FROM Production.Product as P2
+		INNER JOIN Sales.SalesOrderDetail as SOD2
+		ON SOD2.ProductID = P2.ProductID
+		INNER JOIN Sales.SalesOrderHeader as SOH2
+		ON SOH2.SalesOrderID = SOD2.SalesOrderID
+		GROUP BY SOH2.CustomerID
+		HAVING COUNT(DISTINCT P2.ProductSubcategoryID) = 1
+	)
+)

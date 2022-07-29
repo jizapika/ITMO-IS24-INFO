@@ -1,0 +1,100 @@
+1 Найти и вывести на экран количество товаров каждого цвета, исключив из
+поиска товары, цена которых меньше 30
+SELECT Color, COUNT(*) as 'Amount'
+FROM Production.Product
+WHERE ListPrice >= 30 && Color IS NOT NULL
+GROUP BY Color
+2 Найти и вывести на экран список, состоящий из цветов товаров, таких, что
+минимальная цена товара данного цвета более 100
+SELECT Color
+FROM Production.Product
+GROUP BY Color
+WHERE Color IS NOT NULL
+HAVING MIN(ListPrice) >= 100
+3 Найти и вывести на экран номера подкатегорий товаров и количество товаров
+в каждой категории.
+SELECT ProductSubcategoryID, COUNT(*) as 'Amount'
+FROM Production.Product
+WHERE ProductSubcategoryID IS NOT NULL
+GROUP BY ProductSubcategoryID
+4 Найти и вывести на экран номера товаров и количество фактов продаж данного
+товара (используется таблица SalesORDERDetail).
+SELECT ProductID, COUNT(*) as 'AmountOfSales'
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID
+5 Найти и вывести на экран номера товаров, которые были куплены более пяти
+раз.
+SELECT ProductID
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID
+HAVING COUNT(*)>5
+6 Найти и вывести на экран номера покупателей, CustomerID, у которых
+существует более одного чека, SalesORDERID, с одинаковой датой.
+SELECT DISTINCT CustomerID
+FROM Sales.SalesOrderHeader
+GROUP BY CustomerID, OrderDate
+HAVING COUNT(*) > 1
+7 Найти и вывести на экран все номера чеков, на которые приходится более трех
+продуктов.
+SELECT SalesOrderID
+FROM Sales.SalesOrderDetail
+GROUP BY SalesOrderID
+HAVING COUNT(DISTINCT ProductID) > 3
+8 Найти и вывести на экран все номера продуктов, которые были куплены более
+трех раз.
+SELECT ProductID
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID
+HAVING COUNT(*) > 3
+9 Найти и вывести на экран все номера продуктов, которые были куплены или
+три или пять раз.
+SELECT ProductID
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID
+HAVING COUNT(*) = 3 OR COUNT(*) = 5
+10 Найти и вывести на экран все номера подкатегорий, в которым относится
+более десяти товаров.
+SELECT ProductSubcategoryID
+FROM Production.Product
+WHERE ProductSubcategoryID is not null
+GROUP BY ProductSubcategoryID
+HAVING COUNT(*) > 10
+11 Найти и вывести на экран номера товаров, которые всегда покупались в
+одном экземпляре за одну покупку.
+SELECT ProductID
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID
+HAVING MAX(OrderQty) = 1
+12 Найти и вывести на экран номер чека, SalesORDERID, на который приходится
+с наибольшим разнообразием товаров купленных на этот чек.
+SELECT TOP(1) WITH TIES SalesOrderID
+FROM Sales.SalesOrderDetail
+GROUP BY SalesOrderID
+ORDER BY COUNT(*) DESC
+13 Найти и вывести на экран номер чека, SalesORDERID с наибольшей суммой
+покупки, исходя из того, что цена товара – это UnitPrice, а количество
+конкретного товара в чеке – это ORDERQty.
+SELECT TOP(1) WITH TIES SalesOrderID
+FROM Sales.SalesOrderDetail
+GROUP BY SalesOrderID
+ORDER BY SUM(UnitPrice * OrderQty) DESC
+14 Определить количество товаров в каждой подкатегории, исключая товары,
+для которых подкатегория не определена, и товары, у которых не определен цвет.
+SELECT ProductSubcategoryID, COUNT(*) as 'Quantity'
+FROM Production.Product
+WHERE Color is not null and ProductSubcategoryID is not null
+GROUP BY ProductSubcategoryID
+15 Получить список цветов товаров в порядке убывания количества товаров
+данного цвета
+SELECT Color
+FROM Production.Product
+WHERE Color is not null
+GROUP BY Color
+ORDER BY COUNT(*) DESC
+16 Вывести на экран ProductID тех товаров, что всегда покупались в количестве
+более 1 единицы на один чек, при этом таких покупок было более двух.
+SELECT ProductID
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID
+HAVING MIN(OrderQty) > 1 and COUNT(*) > 2
+HAVING MIN(OrderQty) > 1 and COUNT(*) > 2

@@ -1,0 +1,265 @@
+1 Найти название самого продаваемого продукта.
+
+SELECT Name
+FROM Production.Product
+WHERE ProductID = (
+	SELECT TOP(1) ProductID
+	FROM Sales.SalesOrderDetail
+	GROUP BY ProductID
+	ORDER BY COUNT(*) DESC
+)
+
+2 Найти покупателя, совершившего покупку на самую большую сумм, считая сумму покупки исходя из цены товара без скидки (UnitPrice).
+
+SELECT CustomerID
+FROM Sales.SalesOrderHeader as SOH
+JOIN Sales.SalesOrderDetail as SOD
+ON SOD.SalesOrderID = SOH.SalesOrderID
+GROUP BY CustomerID
+HAVING SUM(UnitPrice * OrderQty) = (
+	SELECT TOP(1) SUM(UnitPrice * OrderQty)
+	FROM Sales.SalesOrderHeader as SOH1
+	JOIN Sales.SalesOrderDetail as SOD1
+	ON SOD1.SalesOrderID = SOH1.SalesOrderID
+	GROUP BY CustomerID
+	ORDER BY SUM(UnitPrice * OrderQty) DESC
+)
+
+3 Найти такие продукты, которые покупал только один покупатель.
+
+SELECT Name
+FROM Production.Product
+WHERE ProductID IN(
+	SELECT ProductID
+	FROM Sales.SalesOrderDetail as SOD
+	JOIN Sales.SalesOrderHeader as SOH
+	ON SOD.SalesOrderID = SOH.SalesOrderID
+	GROUP BY ProductID
+	HAVING COUNT(DISTINCT CustomerID) = 1
+)
+
+4 Вывести список продуктов, цена которых выше средней цены товаров в подкатегории, к которой относится товар.
+
+SELECT P.Name
+FROM Production.Product as P
+WHERE P.ListPrice > (
+	SELECT AVG(ListPrice)
+	FROM Production.Product as P1
+	WHERE P1.ProductSubcategoryID = P.ProductSubcategoryID
+	GROUP BY P1.ProductSubcategoryID
+)
+
+5 Найти такие товары, которые были куплены более чем одним покупателем, при этом все покупатели этих товаров покупали товары только одного цвета и товары не входят в список покупок покупателей, купивших товары только двух цветов.
+
+SELECT Name
+FROM Production.Product as P
+WHERE ProductID IN(
+	SELECT P1.ProductID
+	FROM Sales.SalesOrderDetail as SOD1
+	JOIN Sales.SalesOrderHeader as SOH1
+	ON SOD1.SalesOrderID = SOH1.SalesOrderID
+	JOIN Production.Product as P1
+	ON SOD1.ProductID = P1.ProductID
+	GROUP BY P1.ProductID, P1.Color
+	HAVING COUNT(DISTINCT SOH1.CustomerID) > 1 and P1.Color = ALL(
+		SELECT P2.Color
+		FROM Production.Product as P2
+		WHERE P2.ProductID IN(
+			SELECT P3.ProductID
+			FROM Sales.SalesOrderDetail as SOD3
+			JOIN Sales.SalesOrderHeader as SOH3
+			ON SOD3.SalesOrderID = SOH3.SalesOrderID
+			JOIN Production.Product as P3
+			ON SOD3.ProductID = P3.ProductID
+			WHERE SOH3.CustomerID IN(
+				SELECT SOH4.CustomerID
+				FROM Sales.SalesOrderDetail as SOD4
+				JOIN Sales.SalesOrderHeader as SOH4
+				ON SOD4.SalesOrderID = SOH4.SalesOrderID
+				JOIN Production.Product as P4
+				ON SOD4.ProductID = P4.ProductID
+				WHERE P4.ProductID = P1.ProductID
+			)
+		)
+	)
+) and ProductID NOT IN(
+	SELECT P1.ProductID
+	FROM Sales.SalesOrderDetail as SOD1
+	JOIN Sales.SalesOrderHeader as SOH1
+	ON SOD1.SalesOrderID = SOH1.SalesOrderID
+	JOIN Production.Product as P1
+	ON SOD1.ProductID = P1.ProductID
+	WHERE SOH1.CustomerID IN(
+		SELECT SOH2.CustomerID
+		FROM Sales.SalesOrderDetail as SOD2
+		JOIN Sales.SalesOrderHeader as SOH2
+		ON SOD2.SalesOrderID = SOH2.SalesOrderID
+		JOIN Production.Product as P2
+		ON SOD2.ProductID = P2.ProductID
+		GROUP BY SOH2.CustomerID
+		HAVING COUNT(DISTINCT P2.Color) = 2
+	)
+)
+
+6 Найти такие товары, которые были куплены такими покупателями, у которых они присутствовали в каждой их покупке.
+
+SELECT P.ProductID
+FROM Production.Product as P
+JOIN Sales.SalesOrderDetail as SOD
+ON P.ProductID = SOD.ProductID
+JOIN Sales.SalesOrderHeader as SOH
+ON SOH.SalesOrderID = SOD.SalesOrderID
+WHERE SOH.CustomerID IN(
+	SELECT SOH1.CustomerID
+	FROM Sales.SalesOrderHeader as SOH1
+	GROUP BY SOH1.CustomerID
+	HAVING COUNT(DISTINCT SOH1.SalesOrderID) = (
+		SELECT COUNT(DISTINCT P2.ProductID)
+		FROM Production.Product as P2
+		JOIN Sales.SalesOrderDetail as SOD2
+		ON P2.ProductID = SOD2.ProductID
+		JOIN Sales.SalesOrderHeader as SOH2
+		ON SOH2.SalesOrderID = SOD2.SalesOrderID
+		WHERE P.ProductID = P2.ProductID and SOH1.CustomerID = SOH2.CustomerID
+	)
+)
+GROUP BY P.ProductID
+HAVING COUNT(DISTINCT SOH.CustomerID) > 1
+
+7 Найти покупателей, у которых есть товар, присутствующий в каждой покупке/чеке.
+
+SELECT CustomerID
+FROM Sales.SalesOrderHeader as SOH
+JOIN Sales.SalesOrderDetail as SOD
+ON SOH.SalesOrderID = SOD.SalesOrderID
+WHERE ProductID IN(
+	SELECT ProductID
+	FROM Sales.SalesOrderHeader as SOH1
+	JOIN Sales.SalesOrderDetail as SOD1
+	ON SOH1.SalesOrderID = SOD1.SalesOrderID
+	WHERE SOH.CustomerID = SOH1.CustomerID and SOD.ProductID = SOD1.ProductID
+	GROUP BY ProductID, CustomerID
+	HAVING COUNT(*) = (
+		SELECT COUNT(*)
+		FROM Sales.SalesOrderHeader as SOH2
+		WHERE SOH1.CustomerID = SOH2.CustomerID
+	)
+)
+
+8 Найти такой товар или товары, которые были куплены не более чем тремя различными покупателями.
+
+Решение без вложенных подзапросов:
+
+SELECT Name
+FROM Production.Product
+WHERE ProductID IN (
+	SELECT DISTINCT ProductID
+	FROM Sales.SalesOrderDetail as SOD
+	JOIN Sales.SalesOrderHeader as SOH
+	ON SOD.SalesOrderID = SOH.SalesOrderID
+	GROUP BY ProductID
+	HAVING COUNT(DISTINCT CustomerID) <= 3
+)
+
+9 Найти все товары, такие что их покупали всегда с товаром, цена которого максимальна в своей категории.
+
+SELECT DISTINCT SOD.ProductID
+FROM Sales.SalesOrderDetail as SOD
+WHERE SOD.ProductID NOT IN (
+	SELECT SOD1.ProductID
+	FROM Sales.SalesOrderDetail as SOD1
+	WHERE SOD1.SalesOrderID NOT IN (
+		SELECT SOD2.SalesOrderID
+		FROM Sales.SalesOrderDetail as SOD2
+		WHERE SOD2.ProductID IN (
+			SELECT P3.ProductID
+			FROM Production.Product as P3
+			JOIN Production.ProductSubcategory as PSC3
+			ON PSC3.ProductSubcategoryID = P3.ProductSubcategoryID
+			WHERE P3.ProductID IN (
+				SELECT TOP(1) WITH TIES P4.ProductID
+				FROM Production.Product as P4
+				JOIN Production.ProductSubcategory as PSC4
+				ON PSC4.ProductSubcategoryID = P4.ProductSubcategoryID
+				WHERE PSC4.ProductCategoryID = PSC4.ProductCategoryID
+				ORDER BY P4.StandardCost DESC
+			)
+		)
+	)
+)
+
+10 Найти номера тех покупателей, у которых есть как минимум два чека, и каждый из этих чеков содержит как минимум три товара, каждый из которых как минимум был куплен другими покупателями три раза.
+
+Неоптимальное: 
+SELECT SOH.CustomerID
+FROM Sales.SalesOrderHeader as SOH
+WHERE SOH.SalesOrderID IN (
+	SELECT SOD1.SalesOrderID
+	FROM Sales.SalesOrderDetail as SOD1
+	WHERE SOD1.ProductID IN (
+		SELECT SOD2.ProductID
+		FROM Sales.SalesOrderDetail as SOD2
+		JOIN Sales.SalesOrderHeader as SOH2
+		ON SOD2.SalesOrderID = SOH2.SalesOrderID
+		WHERE SOH2.CustomerID != SOH.CustomerID
+		GROUP BY SOD2.ProductID
+		HAVING COUNT(DISTINCT SOD2.SalesOrderID) >= 3
+	)
+	GROUP BY SOD1.SalesOrderID
+	HAVING COUNT(DISTINCT SOD1.ProductID) >= 3
+)
+GROUP BY SOH.CustomerID
+HAVING COUNT(DISTINCT SOH.SalesOrderID) >= 2
+
+11 Найти все чеки, в которых каждый товар был куплен дважды этим же покупателем.
+
+12 Найти товары, которые были куплены минимум три раза различными покупателями.
+
+SELECT SOD.ProductID
+FROM Sales.SalesOrderDetail as SOD
+JOIN Sales.SalesOrderHeader as SOH
+ON SOD.SalesOrderID = SOH.SalesOrderID
+GROUP BY SOD.ProductID
+HAVING COUNT(DISTINCT SOH.CustomerID) IN (
+	SELECT COUNT(SOH1.CustomerID)
+	FROM Sales.SalesOrderDetail as SOD1
+	JOIN Sales.SalesOrderHeader as SOH1
+	ON SOD1.SalesOrderID = SOH1.SalesOrderID
+	WHERE SOD1.ProductID = SOD.ProductID
+	GROUP BY SOD1.ProductID
+) and COUNT(DISTINCT SOH.CustomerID) >= 3
+
+13 Найти такую подкатегорию или подкатегории товаров, которые содержат более трех товаров, купленных более трех раз.
+
+SELECT DISTINCT ProductSubcategoryID
+FROM Production.Product
+WHERE ProductID IN (
+	SELECT DISTINCT ProductID
+	FROM Sales.SalesOrderDetail
+	GROUP BY ProductID
+	HAVING COUNT(DISTINCT SalesOrderID) > 3
+)
+GROUP BY ProductSubcategoryID
+HAVING COUNT(DISTINCT ProductID) > 3
+
+14 Найти те товары, которые не были куплены более трех раз, и как минимум дважды одним и тем же покупателем.
+
+SELECT DISTINCT ProductID
+FROM Sales.SalesOrderDetail
+WHERE ProductID IN (
+	SELECT DISTINCT SOD1.ProductID
+	FROM Sales.SalesOrderDetail as SOD1
+	JOIN Sales.SalesOrderHeader as SOH1
+	ON SOD1.SalesOrderID = SOH1.SalesOrderID
+	WHERE SOH1.CustomerID IN (
+		SELECT SOH2.CustomerID
+		FROM Sales.SalesOrderDetail as SOD2
+		JOIN Sales.SalesOrderHeader as SOH2
+		ON SOD2.SalesOrderID = SOH2.SalesOrderID
+		WHERE SOD1.ProductID = SOD2.ProductID
+		GROUP BY SOH2.CustomerID
+		HAVING COUNT(*) > 1
+	)
+)
+GROUP BY ProductID
+HAVING COUNT(DISTINCT SalesOrderID) <= 3

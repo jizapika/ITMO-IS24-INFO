@@ -1,0 +1,51 @@
+1 Найти долю затрат каждого покупателя на каждый купленный им продукт
+среди общих его затрат в данной сети магазинов. Можно использовать
+обобщенное табличное выражение.
+
+WITH ProductPriceForCustomer(ProductID, CustomerID, Price) as (
+	SELECT ProductID, CustomerID, SUM(ORDERQty*UnitPrice)
+	FROM Sales.SalesOrderDetail as SOD
+	JOIN Sales.SalesOrderHeader as SOH
+	ON SOD.SalesOrderID = SOH.SalesOrderID
+	GROUP BY ProductID, CustomerID
+)
+
+SELECT CustomerID, ProductID, Price as 'Summary for this product',
+Price/sum(Price) OVER(partitiON BY CustomerID) as 'Ratio'
+FROM ProductPriceForCustomer
+
+
+2 Для одного выбранного покупателя вывести, для каждой покупки (чека),
+разницу в деньгах между этой и следующей покупкой.
+
+with sums (customer, ORDERid, total) AS (
+	SELECT SOH.CustomerID, SOH.SalesORDERID, sum(OrderQty * UnitPrice)
+	FROM [Sales].[SalesORDERHeader] AS SOH
+	JOIN [Sales].[SalesORDERDetail] AS SOD
+	ON SOH.SalesORDERID=SOD.SalesORDERID
+	GROUP BY SOH.CustomerID, SOH.SalesORDERID
+)
+
+SELECT customer, ORDERid, total,
+abs(total-LEAD(total,1,0)
+OVER(partitiON BY customer ORDER BY ORDERid)) as 'difference'
+FROM sums
+
+
+3 Вывести следующую информацию: номер покупателя, номер чека этого
+покупателя, отсортированные по покупателям, номерам чека (по возрастанию).
+Третья колонка должна содержать в каждой своей строке сумму текущего чека
+покупателя со всеми предыдущими чеками этого покупателя.
+
+with sums (customer, ORDERid, total) AS (
+	SELECT SOH.CustomerID, SOH.SalesORDERID, sum(OrderQty * UnitPrice)
+	FROM [Sales].[SalesORDERHeader] AS SOH
+	JOIN [Sales].[SalesORDERDetail] AS SOD
+	ON SOH.SalesORDERID=SOD.SalesORDERID
+	GROUP BY SOH.CustomerID, SOH.SalesORDERID
+)
+
+SELECT customer, ORDERid,
+SUM(total) OVER (partitiON BY customer ORDER BY ORDERid) as 'prefix sum'
+FROM sums
+ORDER BY customer

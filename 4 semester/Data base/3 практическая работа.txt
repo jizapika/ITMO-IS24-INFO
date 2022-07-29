@@ -1,0 +1,96 @@
+1 Найти и вывести на экран название продуктов и название категорий товаров, к которым относится этот продукт, с учетом того, что в выборку попадут только товары с цветом Red и ценой не менее 100
+SELECT P.Name, PC.Name as 'Category'
+FROM Production.Product AS P
+INNER JOIN Production.ProductSubcategory AS PSC
+ON P.ProductSubcategoryID = PSC.ProductSubcategoryID
+INNER JOIN Production.ProductCategory AS PC
+ON PSC.ProductCategoryID = PC.ProductCategoryID
+WHERE Color = 'Red' AND ListPrice >= 100
+2 Вывести на экран названия подкатегорий с совпадающими именами.
+SELECT PSC1.Name
+FROM Production.ProductSubcategory as PSC1
+INNER JOIN Production.ProductSubcategory as PSC2
+ON PSC1.ProductCategoryID != PSC2.ProductCategoryID AND PSC1.Name = PSC2.Name
+3 Вывести на экран название категорий и количество товаров в данной
+категории.
+SELECT PC.Name, COUNT(*) as 'Quantity'
+FROM Production.Product as P
+INNER JOIN Production.ProductSubcategory as PSC
+ON P.ProductSubcategoryID = PSC.ProductSubcategoryID
+INNER JOIN Production.ProductCategory as PC
+ON PSC.ProductCategoryID = PC.ProductCategoryID
+GROUP BY PC.Name
+4 Вывести на экран название подкатегории, а также количество товаров в данной
+подкатегории с учетом ситуации, что могут существовать подкатегории с
+одинаковыми именами.
+SELECT PSC.Name, COUNT(*) as 'Quantity'
+FROM Production.Product as P
+INNER JOIN Production.ProductSubcategory as PSC
+ON P.ProductSubcategoryID = PSC.ProductSubcategoryID
+GROUP BY PSC.ProductSubcategoryID, PSC.Name
+5 Вывести на экран название первых трех подкатегорий с наибольшим
+количеством товаров.
+SELECT TOP(3) PSC.Name, COUNT(*) as 'Quantity'
+FROM Production.Product as P
+INNER JOIN Production.ProductSubcategory as PSC
+ON P.ProductSubcategoryID = PSC.ProductSubcategoryID
+GROUP BY PSC.ProductSubcategoryID, PSC.Name
+ORDER BY COUNT(*) DESC
+6 Вывести на экран название подкатегории и максимальную цену продукта с
+цветом Red в этой подкатегории.
+SELECT PSC.Name, MAX(ListPrice) as 'Price'
+FROM Production.Product as P
+INNER JOIN Production.ProductSubcategory as PSC
+ON P.ProductSubcategoryID = PSC.ProductSubcategoryID
+WHERE Color = 'Red'
+GROUP BY PSC.ProductSubcategoryID, PSC.Name
+7 Вывести на экран название поставщика и количество товаров, которые он
+поставляет.
+SELECT Name, COUNT(*) as 'Quantity of products'
+FROM Purchasing.Vendor as V
+INNER JOIN Purchasing.ProductVendor as PV
+ON V.BusinessEntityID = PV.BusinessEntityID
+GROUP BY Name
+8 Вывести на экран название товаров, которые поставляются более чем одним
+поставщиком.
+SELECT P.Name
+FROM Purchasing.ProductVendor as V
+INNER JOIN Production.Product as P
+ON V.ProductID = P.ProductID
+GROUP BY P.ProductID, P.Name
+HAVING COUNT(*) > 1
+9 Вывести на экран название самого продаваемого товара.
+SELECT TOP(1) P.Name, SUM(OrderQty)
+FROM Production.Product as P
+INNER JOIN Sales.SalesOrderDetail as SOD
+ON P.ProductID = SOD.ProductID
+GROUP BY P.ProductID, P.Name
+ORDER BY SUM(OrderQty) DESC
+10 Вывести на экран название категории, товары из которой продаются наиболее
+активно.
+SELECT TOP(1) PC.Name, SUM(OrderQty)
+FROM Production.Product as P
+INNER JOIN Sales.SalesOrderDetail as SOD
+ON P.ProductID = SOD.ProductID
+INNER JOIN Production.ProductSubcategory as PSC
+ON P.ProductSubcategoryID = PSC.ProductSubcategoryID
+INNER JOIN Production.ProductCategory as PC
+ON PSC.ProductCategoryID = PC.ProductCategoryID
+GROUP BY PC.ProductCategoryID, PC.Name
+ORDER BY SUM(OrderQty) DESC
+11 Вывести на экран названия категорий, количество подкатегорий и количество
+товаров в них.
+SELECT PC.Name, COUNT(DISTINCT P.ProductSubcategoryID) as 'Qty SC', COUNT(*) as 'Qty C'
+FROM Production.Product as P
+INNER JOIN Production.ProductSubcategory as PSC
+ON P.ProductSubcategoryID = PSC.ProductSubcategoryID
+INNER JOIN Production.ProductCategory as PC
+ON PSC.ProductCategoryID = PC.ProductCategoryID
+GROUP BY PC.ProductCategoryID, PC.Name
+12 Вывести на экран номер кредитного рейтинга и количество товаров,
+поставляемых компаниями, имеющими этот кредитный рейтинг.
+SELECT CreditRating, COUNT(DISTINCT ProductID)
+FROM Purchasing.Vendor as V
+INNER JOIN Purchasing.ProductVendor as PV
+ON V.BusinessEntityID = PV.BusinessEntityID
+GROUP BY CreditRating
