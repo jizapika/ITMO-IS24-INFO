@@ -1,0 +1,63 @@
+def sum(A, B):
+    if len(A) == len(B):
+        if len(A[0]) == len(B[0]):
+            C = [[] for i in range(len(A))]
+            for i in range(len(A)):
+                for j in range(len(A[i])):
+                    C[i].append(A[i][j] + B[i][j])
+            return C
+def matrixtonumber(A, k):
+    C = [[] for i in range(len(A))]
+    for i in range(len(A)):
+        for j in range(len(A[i])):
+            C[i].append(A[i][j] * k)
+    return C
+def matrixtomatrix(A, B):
+    if len(A[0]) == len(B):
+        C = [[] for i in range(len(A))]
+        for i in range(len(A)):
+            for j in range(len(B[0])):
+                C[i].append(0)
+                for k in range(len(A[0])):
+                    C[i][j] = C[i][j] + A[i][k] * B[k][j]
+        return C
+def transposition(A):
+    if len(A) == len(A[0]):
+        C = [[] for i in range(len(A))]
+        for i in range(len(A[i])):
+            for j in range(len(A)):
+                С[j].append(A[i][j])
+        return C
+def Function1(a, b, A, B, C, D, F):
+    return sum(matrixtomatrix(matrixtomatrix(C,transposition(sum(matrixtonumber(A, a), matrixtonumber(transposition(B), a)))), D), matrixtonumber(F, -1))
+a, b = map(int, input().split())
+na, ma = map(int, input().split())
+A = [[] for i in range(na)]
+for i in range(na):
+    for j in range(ma):
+        A[i].append(int(input()))
+nb, mb = map(int, input().split())
+B = [[] for i in range(nb)]
+for i in range(nb):
+    for j in range(mb):
+        B[i].append(int(input()))
+nc, mc = map(int, input().split())
+C = [[] for i in range(nc)]
+for i in range(nc):
+    for j in range(mc):
+        C[i].append(int(input()))
+nd, md = map(int, input().split())
+D = [[] for i in range(nd)]
+for i in range(nd):
+    for j in range(md):
+        D[i].append(int(input()))
+nf, mf = map(int, input().split())
+F = [[] for i in range(nf)]
+for i in range(nf):
+    for j in range(mf):
+        F[i].append(int(input()))
+ANS = Function1(a, b, A, B, C, D, F)
+for i in range(len(ANS)):
+    for j in range(len(ANS[i])):
+        print(ANS[i][j], end = ' ')
+    print()
