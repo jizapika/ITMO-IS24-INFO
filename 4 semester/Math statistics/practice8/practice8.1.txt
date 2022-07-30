@@ -1,0 +1,45 @@
+clc
+clear
+pkg load statistics
+
+xmin = 1.2;
+xmax = 3.3;
+n = 49;
+c1 = 1.2;
+c2 = -2.6;
+s = 1.9;
+
+printf("y = %.1fx + %.1f, s = %.1f\n\n", c2, c1, s);
+
+X = linspace(xmin, xmax, n)';
+A = [];
+i = [1, 2];
+
+A(:, i) = X.^(i - 1);
+y = A * [c1, c2]';
+z = normrnd(0, s, n, 1);
+Y = y + z;
+An1 = (A' * A)^-1 * A' * Y;
+An2 = polyfit(X, Y, 1);
+Cov1 = X' * Y / n - mean(X) * mean(Y);
+Cov2 = X' * X / n - (mean(X))^2;
+Covariation = [mean(Y) - Cov1 / Cov2 * mean(X); Cov1 / Cov2];
+
+printf("Matrix: ");
+disp(An1');
+printf("Polyfit: ");
+disp(fliplr(An2));
+printf("Covariation: ");
+disp(Covariation');
+
+Yn1 = A * An1;
+Yn2 = polyval(An2, X);
+Yn3 = A * Covariation;
+plot(X, Y, '*', X, Yn1, 'o-', X, Yn2, '+-', X, y, X, Yn3, '^-');
+legend("Points", "Matrix method", "Polyfit", "Function", "Covariation");
+axis("tight");
+
+r = Yn2 - Y;
+printf("Ortogonality: %g\n", r' * Yn2);
+noise = sqrt(r' * r / (n - 3));
+printf("Noise: %d\n", noise);

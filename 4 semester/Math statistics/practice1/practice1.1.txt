@@ -1,0 +1,45 @@
+%18 variant
+
+clc;
+clear;
+pkg load statistics;
+k = 13;
+c = 4.7;
+n1 = 10^4
+n2 = 10^6
+gamma = 0.95;
+
+function res = f(x)
+  a = 1.5;
+  res = x.^a;
+  end
+
+%function res = avg(X)
+%  res = mean(X);
+%  end
+
+%function res = segment(X)
+%  dispersion = sum((X - avg(X))^2)
+  
+
+points1 = rand(n1, k);
+points2 = rand(n2, k);
+fPoints1 = arrayfun(@f, points1);
+fPoints2 = arrayfun(@f, points2);
+
+sum1 = sum(fPoints1');
+P1 = sum(sum1 < c) / n1;
+sum2 = sum(fPoints2');
+P2 = sum(sum2 < c) / n2;
+
+d1 = P1 * (1 - P1) / n1;
+d2 = P2 * (1 - P2) / n2;
+
+b1 = sqrt(d1) * norminv((1 + gamma) / 2);
+b2 = sqrt(d2) * norminv((1 + gamma) / 2);
+
+I1 = [P1 - b1, P1 + b1]
+I2 = [P2 - b2, P2 + b2]
+
+delta1 = 2 * b1
+delta2 = 2 * b2

@@ -1,0 +1,72 @@
+clc
+clear
+pkg load statistics
+
+alpha = 0;
+sigma = 2;
+n = 100;
+gamma = 0.95;
+u = 1.36;
+x_norm = [norminv(1/(2*n)) * sigma : 0.01 : norminv(1 - 1/(2*n)) * sigma];
+y_norm = normcdf(x_norm, alpha, sigma);
+
+[x_stair, y_stair] = stairs(sort(normrnd(alpha, sigma, n, 1)), [1/n : 1/n : 1]);
+
+down_stair = max(0, y_stair - u / sqrt(n));
+up_stair = min(1, y_stair + u / sqrt(n));
+
+title(strcat("N(", num2str(alpha),",",num2str(sigma^2),")"));
+plot(x_norm, y_norm, x_stair, y_stair, x_stair, down_stair, x_stair, up_stair);
+
+function norm(N, M, alpha, sigma)
+	printf("N = %d:\n", N);
+	i = [1 : 1 : N];
+
+	Fx = normcdf(sort(normrnd(alpha, sigma, N, 1)), alpha, sigma)';
+	dn = sqrt(N) * max (max(abs(Fx(i) - i / N)), max(abs(Fx(i) - (i - 1) / N)))
+	wn = 1 / (12 * N) + sum((Fx(i) - (2 * i - 1) / (2 * N)).^2)
+	
+	limit_dn = 1.358;
+	limit_wn = 0.46;
+
+	count_dn = 0;
+  	count_wn = 0;
+  	for (j = 1 : M)
+		i = 1:N;
+    		Fx = normcdf(sort(normrnd(alpha, sigma, N, 1)), alpha, sigma)';
+		dn = sqrt(N) * max (max(abs(Fx(i) - i / N)), max(abs(Fx(i) - (i - 1) / N)));
+		wn = 1 / (12 * N) + sum((Fx(i) - (2 * i - 1) / (2 * N)).^2);
+
+    		if (dn > limit_dn)
+      			++count_dn;
+    		endif
+    		if (wn > limit_wn)
+      			++count_wn;
+    		endif
+  	endfor
+  	printf("Error 1\n");
+  	printf("Kolmogorov average: %d\n", count_dn / M);
+  	printf("Smirnov average: %d\n", count_wn / M);
+
+	count_dn = 0;
+  	count_wn = 0;
+  	for (j = 1 : M)
+		i = 1:N;
+    		Fx = normcdf(sort(normrnd(alpha, sigma, N, 1)), alpha + 0.1, sigma)';
+		dn = sqrt(N) * max (max(abs(Fx(i) - i / N)), max(abs(Fx(i) - (i - 1) / N)));
+		wn = 1 / (12 * N) + sum((Fx(i) - (2 * i - 1) / (2 * N)).^2);
+
+    		if (dn < limit_dn)
+      			++count_dn;
+    		endif
+    		if (wn < limit_wn)
+      			++count_wn;
+    		endif
+  	endfor
+  	printf("Error 2\n");
+  	printf("Kolmogorov average: %d\n", count_dn / M);
+  	printf("Smirnov average: %d\n\n", count_wn / M);
+endfunction
+
+norm(10^4, 100, alpha, sigma)
+norm(10^6, 100, alpha, sigma)

@@ -1,0 +1,37 @@
+clc;
+clear;
+pkg load statistics;
+
+alpha = 0;
+sigma = 2;
+n = 10^6;
+m = 100;
+
+x = [norminv(1 / 2 / n) * sigma : 0.01 : norminv(1 - 1 / 2 / n) * sigma];
+y = normpdf(x, alpha, sigma);
+
+d = sort(normrnd(alpha, sigma, n, 1));
+width = (d(end) - d(1)) / m;
+height = hist(d, m) / n / width;
+
+columns = d(1) : width : d(end) - width;
+[xs, ys] = stairs(columns, height);
+
+title(strcat("N(", num2str(alpha),",",num2str(sigma^2),")"));
+plot(x, y, xs, ys);
+
+
+a = -2;
+b = 2;
+x = [a-1 : 0.01 : b+1];
+y = unifpdf(x, a, b);
+
+d = sort(unifrnd(a, sigma, n, 1));
+width = (d(end) - d(1)) / m;
+height = hist(d, m) / n / width;
+
+columns = d(1) : width : d(end) - width;
+[xs, ys] = stairs(columns, height);
+
+title(strcat("U(", num2str(a),",",num2str(b),")"));
+plot(x, y, xs, ys);

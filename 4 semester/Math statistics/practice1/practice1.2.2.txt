@@ -1,0 +1,30 @@
+%18 variant
+
+clc;
+clear;
+pkg load statistics;
+
+a = 0;
+b = inf;
+n1 = 10^4;
+n2 = 10^6;
+u = 1/3;
+gamma = 0.95;
+
+x1 = exprnd(u, n1, 1);
+x2 = exprnd(u, n2, 1);
+fPoints1 = sqrt(x1) * u;
+fPoints2 = sqrt(x2) * u;
+ans1 = mean(fPoints1);
+ans2 = mean(fPoints2);
+
+b1 = norminv((1 + gamma) / 2) * std(fPoints1) / sqrt(n1);
+b2 = norminv((1 + gamma) / 2) * std(fPoints2) / sqrt(n2);
+
+I1 = [ans1 - b1, ans1 + b1]
+I2 = [ans2 - b2, ans2 + b2]
+
+delta1 = 2 * b1
+delta2 = 2 * b2
+
+Ireal = quad('sqrt(x)*exp(-3*x)', a, b)

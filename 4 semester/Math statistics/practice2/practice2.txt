@@ -1,0 +1,77 @@
+clc
+clear
+pkg load statistics;
+
+global m = 10^2;
+global n = 10^4;
+global t0 = 0.4;
+alpha = 0;
+sigma = 1;
+a = 0;
+b = 1;
+
+function res = Fx_norm(alpha, sigma)
+	global t0;
+	res = normcdf(t0, alpha, sigma);
+endfunction
+
+function res = X_norm(alpha, sigma)
+	global m;
+	global n;
+	res = normrnd(alpha, sigma, n, m);
+endfunction
+
+function res = Fx_const(a, b)
+	global t0;
+	res = unifcdf(t0, a, b);
+endfunction
+
+function res = X_const(a, b)
+	global m;
+	global n;
+	res = unifrnd(a, b, n, m);
+endfunction
+
+function res = calculation(X, Fx, gamma, isWithGrafic)
+	global t0;
+	global m;
+	global n;
+	Fn = mean(X < t0);
+	D = Fx * (1 - Fx) / n;
+	b = norminv((1 + gamma) / 2) * sqrt(D);
+	L = Fn - b;
+	R = Fn + b;
+	res = 0;
+	for (i = 1 : m)
+		if (L(i) > Fx || R(i) < Fx)
+			res++;
+		endif
+	endfor
+	if (isWithGrafic == 1)
+		plot(1 : m, L, 1 : m, R, 1 : m, linspace(Fx, Fx, m));
+	endif
+endfunction
+
+
+calculation(X_const(a, b), Fx_const(a, b), 0.95, 1);
+for (i = 0 : 9)
+	qty = [];
+	gamma = i * 0.01 + 0.9;
+	for (j = 1 : 100)
+		qty(j) = calculation(X_const(a, b), Fx_const(a, b), gamma, 0);
+	endfor
+	avg = mean(qty);
+	printf("gamma = %i   and   average = %i\n", gamma, avg);
+endfor
+
+
+calculation(X_norm(alpha, sigma), Fx_norm(alpha, sigma), 0.95, 1);
+for (i = 0 : 9)
+	qty = [];
+	gamma = i * 0.01 + 0.9;
+	for (j = 1 : 100)
+		qty(j) = calculation(X_norm(alpha, sigma), Fx_norm(alpha, sigma), gamma, 0);
+	endfor
+	avg = mean(qty);
+	printf("gamma = %i   and   average = %i\n", gamma, avg);
+endfor

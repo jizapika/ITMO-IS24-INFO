@@ -1,0 +1,32 @@
+%18 variant
+
+clc;
+clear;
+pkg load statistics;
+a = 1;
+b = 9;
+n1 = 10^4;
+n2 = 10^6;
+gamma = 0.95;
+
+function res = f(x)
+  res = cos(2*x)/(x^2+4);
+  end
+
+points1 = unifrnd(a, b, n1, 1);
+points2 = unifrnd(a, b, n2, 1);
+fPoints1 = arrayfun(@f, points1);
+fPoints2 = arrayfun(@f, points2);
+ans1 = mean(fPoints1) * (b-a);
+ans2 = mean(fPoints2) * (b-a);
+
+b1 = (b-a) * norminv((1 + gamma) / 2) * std(fPoints1) / sqrt(n1);
+b2 = (b-a) * norminv((1 + gamma) / 2) * std(fPoints2) / sqrt(n2);
+
+I1 = [ans1 - b1, ans1 + b1]
+I2 = [ans2 - b2, ans2 + b2]
+
+delta1 = 2 * b1
+delta2 = 2 * b2
+
+Ireal = quad('cos(2*x)/(x^2+4)', a, b)

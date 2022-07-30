@@ -1,0 +1,74 @@
+clc
+clear
+pkg load statistics
+
+left = 0;
+right = 2;
+n = 100;
+gamma = 0.95;
+u = 1.36;
+
+x_unif = [left : 0.01 : right];
+y_unif = unifcdf(x_unif, left, right);
+
+[x_stair, y_stair] = stairs(sort(unifrnd(left, right, n, 1)), [1/n : 1/n : 1]);
+
+down_stair = max(0, y_stair - u / sqrt(n));
+up_stair = min(1, y_stair + u / sqrt(n));
+
+title(strcat("U(", num2str(left),",",num2str(right),")"));
+plot(x_unif, y_unif, x_stair, y_stair, x_stair, down_stair, x_stair, up_stair);
+
+function unif(N, M, left, right)
+	printf("N = %d:\n", N);
+	i = [1 : 1 : N];
+
+	Fx = unifcdf(sort(unifrnd(left, right, N, 1)), left, right)';
+	dn = sqrt(N) * max (max(abs(Fx(i) - i / N)), max(abs(Fx(i) - (i - 1) / N)))
+	wn = 1 / (12 * N) + sum((Fx(i) - (2 * i - 1) / (2 * N)).^2)
+	
+	limit_dn = 1.358;
+	limit_wn = 0.46;
+
+	count_dn = 0;
+  	count_wn = 0;
+  	for (j = 1 : M)
+		i = 1:N;
+    		Fx = unifcdf(sort(unifrnd(left, right, N, 1)), left, right)';
+		dn = sqrt(N) * max (max(abs(Fx(i) - i / N)), max(abs(Fx(i) - (i - 1) / N)));
+		wn = 1 / (12 * N) + sum((Fx(i) - (2 * i - 1) / (2 * N)).^2);
+
+    		if (dn > limit_dn)
+      			++count_dn;
+    		endif
+    		if (wn > limit_wn)
+      			++count_wn;
+    		endif
+  	endfor
+  	printf("Error 1:\n");
+  	printf("Kolmogorov average: %d\n", count_dn / M);
+  	printf("Smirnov average: %d\n", count_wn / M);
+
+
+	count_dn = 0;
+  	count_wn = 0;
+  	for (j = 1 : M)
+		i = 1:N;
+    		Fx = unifcdf(sort(unifrnd(left, right, N, 1)), left + 0.1, right)';
+		dn = sqrt(N) * max (max(abs(Fx(i) - i / N)), max(abs(Fx(i) - (i - 1) / N)));
+		wn = 1 / (12 * N) + sum((Fx(i) - (2 * i - 1) / (2 * N)).^2);
+
+    		if (dn < limit_dn)
+      			++count_dn;
+    		endif
+    		if (wn < limit_wn)
+      			++count_wn;
+    		endif
+  	endfor
+  	printf("Error 2:\n");
+  	printf("Kolmogorov average: %d\n", count_dn / 100);
+	printf("Smirnov average: %d\n\n", count_wn / 100);
+endfunction
+
+unif(10^4, 100, left, right)
+unif(10^6, 100, left, right)

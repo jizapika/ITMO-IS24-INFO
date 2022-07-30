@@ -1,0 +1,90 @@
+clc;
+clear;
+pkg load statistics;
+
+
+N = 8;
+p = 0.7;
+q = 1 - p;
+
+
+P = diag(ones(1, N - 1) * q, - 1) + diag(ones(1, N - 1) * p, 1);
+P(1, 1) = q;
+P(N, N) = p;
+disp("Matrix")
+disp(P);
+
+
+tP = 0;
+if (p == q) 
+  	tP = 1 / N;
+else
+  	for k = 1 : N
+    		tP(k) = ((p / q) ^ (k - 1) - (p / q) ^ k) / (1 - (p / q) ^ N);
+  	endfor
+endif
+disp("\nTheoretical probability")
+disp(tP)
+
+
+p01 = rand(1, N - 4);
+p02 = p01 / sum(p01);
+p0 = [0, 0, p02, 0, 0];
+disp("\nStart vector");
+disp(p0);
+
+x0 = zeros(1, N);
+x0(1) = p0(1);
+
+for i = 2:N
+  	x0(i) = x0(i - 1) + p0(i);
+end
+rnd = rand(1, 1);
+
+j = 1;
+while rnd > x0(j)
+  	j++;
+end
+
+
+x = [j];
+
+
+pP(1, :) = [0, 0, ones(1, N - 4) / (N - 4), 0, 0];
+
+
+iter = 200;
+for i = 2 : iter
+  	if (rand() < q)
+    		x(i) = x(i-1) - 1;
+  	else
+    		x(i) = x(i-1) + 1;
+  	endif
+  	if(x(i) < 1)
+    		x(i) = 1;
+  	endif
+  	if(x(i) > N)
+    		x(i) = N;
+  	endif  
+  	pP(i, :) = pP(i - 1, :) * P;
+end
+
+
+figure
+plot(x, 'r--')
+title('State graph')
+xlabel('Time')
+ylabel('State')
+axis([0 iter 0 N])
+grid on
+
+figure
+plot(pP);
+title('Probability graph')
+xlabel('Time')
+ylabel('Probability')
+axis([0 iter 0 1])
+grid on
+
+disp("\nPractical probability")
+disp(pP(iter, :))

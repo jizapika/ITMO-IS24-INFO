@@ -1,0 +1,60 @@
+clc;
+clear;
+pkg load statistics;
+
+function norm(alpha, sigma, n)
+  	printf("Normal for n=%d:\n", n);
+  	m = 100;
+  	c1 = 0.4;
+  	printf("Theory:\n");
+  	x_n = sqrt(sigma ^ 2 / n)
+  	med = sqrt(pi * sigma ^ 2 / n / 2)
+  	half_sum = sqrt(c1 * sigma ^ 2 / log(n))
+  
+  	printf("Practice:\n");
+  	x = normrnd(alpha, sigma, n, m);
+  	x_n = std(mean(x))
+  	med = std(median(x))
+  	half_sum = std((min(x) + max(x)) / 2)
+  	printf("\n");
+endfunction
+
+function unif(a, d, n)
+  	printf("Uniform for n=%d:\n", n);
+  	m = 100;
+  	printf("Theory:\n");
+  	x_n = d / sqrt(12 * n)
+  	med = d / sqrt(4 * n)
+  	half_sum = d / n / sqrt(2)
+  
+  	printf("Practice:\n");
+  	x = unifrnd(a - d / 2, a + d / 2, n, m);
+  	x_n = std(mean(x))
+  	med = std(median(x))
+  	half_sum = std((min(x) + max(x)) / 2)
+  	printf("\n");
+endfunction
+
+function laplace(a, u, n)
+  	printf("Laplace for n=%d:\n", n);
+  	m = 100;
+  	c2 = 0.9;
+  	printf("Theory:\n");
+  	x_n = sqrt(2 * u ^ 2 / n)
+  	med = sqrt(u ^ 2 / n)
+  	half_sum = sqrt(c2 * u ^ 2)
+  
+  	printf("Practice:\n");
+  	x = a + exprnd(u, n, m) - exprnd(u, n, m);
+  	x_n = std(mean(x))
+ 	med = std(median(x))
+ 	half_sum = std((min(x) + max(x)) / 2)
+  	printf("\n");
+endfunction
+
+norm(0, 1, 100);
+norm(0, 1, 10000);
+unif(0, 2, 100);
+unif(0, 2, 10000);
+laplace(0, 1, 100);
+laplace(0, 1, 10000);
