@@ -1,0 +1,8 @@
+#!/bin/bash
+echo "You need to enter your name"
+read NAME
+echo "Let's chating!"
+bash /home/user/lab3/task/handler &
+while read LINE; do
+	echo $NAME ": " $LINE >> pipe
+done

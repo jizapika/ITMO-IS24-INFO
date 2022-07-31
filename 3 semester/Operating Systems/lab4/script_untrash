@@ -1,0 +1,74 @@
+#!/bin/bash
+while true
+do
+	read -p "Enter filename: " filename
+	array="$(cat /home/.trash.log | grep $filename)"
+	path=""
+	link=""
+	for file in $array
+	do
+		if [[ $path == "" ]]
+			then
+				path="-"
+				read -p "Is "$(echo $file)" you want? (Y/N): " answer
+				while true
+				do
+					if [[ $answer == "Y" ]]
+						then
+							path=$file
+							break
+						else
+							if [[ $answer == "N" ]]
+								then
+									break
+								else
+									read -p "Y or N: " answer
+							fi
+					fi
+				done
+			else
+				if [[ $path == "-" ]]
+					then
+						path=""
+					else
+						link=$file
+						break
+				fi
+		fi
+	done
+	if [[ $path != "" ]]
+		then
+			if [[ -e $link ]]
+				then
+					while [[ -e $path ]]
+					do
+						echo "This file already exists."
+						read -p "Do you want to rename that file? (Y/..): " answer
+						if [[ $answer == "Y" ]]
+							then
+								read -p "Enter new path, please: " path
+							else
+								break
+						fi
+					done
+					if [[ ! -e $path ]]
+						then
+							ln $link $path
+							rm $link
+					fi
+				else
+					echo "This file doesn't exist in logs."
+			fi
+			break
+		else
+			echo "There are all log-files. Are you sure, that it was correct? (Y/..)"
+			read answer
+			if [[ $answer != "Y" ]]
+				then
+					echo "Sorry, the file was lost".
+					break
+				else
+					echo "Let's try again!"
+			fi
+	fi
+done

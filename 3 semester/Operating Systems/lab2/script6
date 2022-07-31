@@ -1,0 +1,14 @@
+#/!bin/bash
+middlefile="middle6.txt"
+for i in $(ps -A | awk '{print $1}')
+do
+status_file="/proc/"$i"/status"
+if [[ -r $status_file ]]
+then
+echo $i $(cat $status_file | grep VmRSS | awk '{print $2}')
+fi
+done > $middlefile
+cat $middlefile | sort -nk 2 | tail -1 | awk '{print "IF WE ARE USING STATUS (PID=" $1 " : RSS of this process is " $2 ")"}'
+rm $middlefile
+
+top -o %MEM | head -8 | tail -1 | awk '{print "IF WE ARE USING TOP    (PID=" $2 " : RSS of this process is " $7 ")"}'

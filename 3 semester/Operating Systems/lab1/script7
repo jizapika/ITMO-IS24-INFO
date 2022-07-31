@@ -1,0 +1,3 @@
+#!/bin/bash
+grep --text -s -h -R -E -o "\b[[:alnum:]\_\.\-]+@[[:alpha:]]+\.[[:alpha:]]{2,6}\b" /etc/ | sort | uniq -c | awk '{printf("%s%s", $2, ", ")}' > emails.lst;
+echo -e "..." >> emails.lst

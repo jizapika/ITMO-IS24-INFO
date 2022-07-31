@@ -1,0 +1,14 @@
+#!/bin/bash
+read filename
+if [[ ! -d /home/.trash ]]
+	then
+		mkdir /home/.trash
+fi
+let count=1
+while [[ -e /home/.trash/$filename$count ]]
+do
+	let count=$count+1
+done
+ln -P ./$filename /home/.trash/$filename$count
+rm ./$filename
+echo $(pwd)/$filename /home/.trash/$filename$count >> /home/.trash.log

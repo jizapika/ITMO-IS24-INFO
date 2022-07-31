@@ -1,0 +1,49 @@
+#!/bin/bash
+currentDate="$(date +%Y-%m-%d)"
+let currentSecond=$(date +%s)
+backUpDate=$(ls /home/user | grep "^Backup-" | sed 's/Backup-//' | sort -n | tail -1)
+if [[ $backUpDate == "" ]]
+	then
+		backUpDate="1970-01-01"
+fi
+let backUpSecond=$(date -d "$backUpDate" +%s)
+
+let daysAgo=($currentSecond-$backUpSecond)/60/60/24
+if [[ $daysAgo -ge 7 ]]
+	then
+		mkdir "/home/user/Backup-$currentDate"
+		cp -a -T /home/user/source "/home/user/Backup-$currentDate"
+		message="Backup-$currentDate was created. The files $(ls /home/user/source) have been copied into it."
+		echo $message >> /home/user/backup-report
+	else
+		backUpDir="/home/user/Backup-$backUpDate/"
+		renamingMessages=()
+		copiedMessages=()
+		for file in $(ls /home/user/source)
+		do
+			if [ -f $backUpDir$file ]
+				then
+					backUpSize=$(ls -l $backUpDir$file | awk '{print $5}')
+					copiedSize=$(ls -l /home/user/source/$file | awk '{print $5}')
+					if [ $backUpSize -ne $copiedSize ]
+						then
+							mv $backUpDir$file "$backUpDir$file-$backUpDate"
+							cp -p /home/user/source/$file $backUpDir$file
+							renamingMessages+=("$file-$backUpDate")
+							copiedMessages+=("$file")
+					fi
+				else
+					cp -p /home/user/source/$file $backUpDir$file
+					copiedMessages+=("$file")
+			fi
+		done
+		echo "Backup-$backUpDate was changed:" >> /home/user/backup-report
+		for msg in $copiedMessages
+		do
+			echo "	copy $msg to backup" >> /home/user/backup-report
+		done
+		for msg in $renamingMessages
+		do
+			echo "	$msg - edition version" >> /home/user/backup-report
+		done
+fi

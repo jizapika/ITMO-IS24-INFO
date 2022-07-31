@@ -1,0 +1,4 @@
+#!/bin/bash
+(tail -f pipe) | while read LINE
+do
+

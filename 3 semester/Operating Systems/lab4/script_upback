@@ -1,0 +1,13 @@
+#!/bin/bash
+lastBackUp="/home/user/Backup-"$(ls /home/user | grep "^Backup-" | sed 's/Backup-//' | sort -n | tail -1)
+if [ ! -d /home/user/restore ]
+	then
+		mkdir /home/user/restore
+fi
+for file in $(ls $lastBackUp)
+do
+	if [[ $(echo "$file" | grep -P "\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\$") == "" ]]
+		then
+			cp -p "$lastBackUp/$file" /home/user/restore/$file
+	fi
+done

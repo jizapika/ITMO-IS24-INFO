@@ -1,0 +1,37 @@
+#!/bin/bash
+for i in {1 2 3}
+do
+bash /home/user/lab3/Infinity_multiply &
+done
+
+sleep 5s
+
+n=1
+for pid in $(jobs -p)
+do
+	if [[ $(cat /proc/$pid/status | grep "PPid" | awk '{print $2}') -eq $$ ]]
+	then
+		case "$n" in
+			1 ) pid1=$pid ;;
+			2 ) pid2=$pid ;;
+			3 ) pid3=$pid ;;
+		esac
+		let n+=1
+	fi
+done
+
+top -n 1 -p $pid1 | awk 'NR == 8 {print "First process using", $10, "% of CPU"}'
+top -n 1 -p $pid2 | awk 'NR == 8 {print "Second process using", $10, "% of CPU"}'
+top -n 1 -p $pid3 | awk 'NR == 8 {print "Third process using", $10, "% of CPU"}'
+
+cpulimit -p $pid1 -l 10 &
+
+sleep 5s
+kill $pid3
+echo "Process 3 deleted"
+sleep 5s
+
+top -n 1 -p $pid1 | awk 'NR == 8 {print "First process 10 seconds later using", $10, "% of CPU"}'
+top -n 1 -p $pid2 | awk 'NR == 8 {print "Second process 10 seconds later using", $10, "% of CPU"}'
+
+kill $pid1 $pid2

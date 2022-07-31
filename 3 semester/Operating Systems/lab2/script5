@@ -1,0 +1,32 @@
+#/!bin/bash
+middlefile="middle5.txt"
+file5="output5.txt"
+file4="output4.txt"
+sed 's/Parent_ProcessID=//' $file4 | sed 's/Average_Running_Time=//' > $middlefile
+echo "-1 -1 -1 -1 -1" >> $middlefile
+let last_parent=0
+let cur_summ_of_art=0
+let cur_quantity_of_children=0
+
+echo "$(cat $middlefile)" | while read line; do
+pid=`echo $line | cut -f 1 -d' '`
+ppid=`echo $line | cut -f 3 -d' '`
+art=`echo $line | cut -f 5 -d' '`
+if [[ $ppid -ne $last_parent ]]
+then
+echo "Average_Running_Children_of_ParentID=" $last_parent " is " $(bc<<<"scale=6;$cur_summ_of_art/$cur_quantity_of_children" | awk '{ printf("%f\n", $0) }')
+cur_summ_of_art=0
+cur_quantity_of_children=0
+fi
+if [[ $ppid -ne "-1" ]]
+then
+cur_summ_of_art=`bc -l <<<"scale=6;($art)+($cur_summ_of_art)" | awk '{ printf("%f", $0) }'`
+let cur_quantity_of_children+=1
+let last_parent=ppid
+echo $pid " : Parent_ProcessID=" $ppid " : Average_Running_Time=" $art
+fi
+done > $file4
+
+rm $middlefile
+
+exit 0

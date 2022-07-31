@@ -1,0 +1,7 @@
+#/!bin/bash
+mkdir /home/test &&
+{
+	echo "catalog test was created successfully" > ~/report
+	> /home/test/$(date +"%d-%m-%Y_%I:%M:%S.txt")
+}
+ping www.net_nikogo.ru || echo $(date +"%d-%m-%Y_%I:%M:%S")" - Хост www.net_nikogo.ru недоступен " >> ~/report

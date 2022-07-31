@@ -1,0 +1,10 @@
+#!/bin/bash
+ma=$2
+if [[ "$3" -gt "$2" ]] 
+then ma=$3
+fi
+if [[ "$4" -gt "$ma" ]]
+then ma=$4
+fi
+echo "$ma"
+exit

@@ -1,0 +1,34 @@
+#!/bin/bash
+let "result=1"
+operation="+"
+(tail -f pipe) |
+while true; do
+	read LINE;
+	case $LINE in
+		"+")
+			operation=$LINE
+			;;
+		"*")
+			operation=$LINE
+			;;
+		[0-9]*)
+			if [[ $operation == "+" ]]
+				then
+					let "result=($result) + ($LINE)"
+				else
+					let "result=($result) * ($LINE)"
+			fi
+			echo $result
+			;;
+		"QUIT")
+			echo "exit"
+			killall tail
+			exit
+ 			;;
+		*)
+			echo "ERROR"
+			killall tail
+			exit
+			;;
+	esac
+done

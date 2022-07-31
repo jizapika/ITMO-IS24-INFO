@@ -1,0 +1,33 @@
+#/!bin/bash
+differentfile="different.txt"
+beforefile="before.txt"
+for i in $(ps -A | awk '{print $1}')
+do
+process_io="/proc/"$i"/io"
+if [[ -r $process_io ]]
+then
+echo $i $(cat $process_io | grep read_bytes | awk '{print $2}')
+fi
+done > $beforefile
+
+sleep 1m
+
+echo "$(cat $beforefile)" | while read line; do
+pid=`echo $line | cut -f 1 -d' '`
+before_read=`echo $line | cut -f 2 -d' '`
+process_io="/proc/"$pid"/io"
+if [[ -r $process_io ]]
+then
+after_read=$(cat $process_io | grep read_bytes | awk '{print $2}')
+different=`bc -l <<<"scale=6;($after_read)-($before_read)" | awk '{ printf("%f", $0) }'`
+process_cmdline="/proc/"$pid"/cmdline"
+if [[ -r $process_cmdline ]]
+then
+echo $pid $different $(tr -d '\0' < $process_cmdline)
+fi
+fi
+done > $differentfile
+
+cat $differentfile | sort -nk 3 | head -3 | awk '{print "PID=" $1 " : CMD=\"" $3 "\" : read_bytes_for_this_minute=" $2}'
+rm $differentfile
+rm $beforefile

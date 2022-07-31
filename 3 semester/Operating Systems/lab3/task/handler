@@ -1,0 +1,9 @@
+#!/bin/bash
+(tail -f pipe) | while true
+do
+	read LINE
+	echo $LINE
+	if [[ -f proc/$(cat proc/$$/status | grep "PPid" | awk '{print $2}')/status ]]
+		then
+			exit
+done

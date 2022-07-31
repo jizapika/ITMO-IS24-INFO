@@ -1,0 +1,35 @@
+#!/bin/bash
+echo $$ > .pid
+result=1
+MODE="PLUS"
+usr1()
+{
+	MODE="PLUS"
+}
+usr2()
+{
+	MODE="MULTIPLY"
+}
+usr3()
+{
+	MODE="SIGTERM"
+}
+trap 'usr1' USR1
+trap 'usr2' USR2
+trap 'usr3' USR3
+while true; do
+	case $MODE in
+		"PLUS")
+			let A=$A+2
+			echo $A
+			;;
+		"MULTIPLY")
+			let A=$A*2
+			echo $A
+			;;
+		"SIGTERM")
+			exit
+			;;
+	esac
+sleep 1
+done

@@ -1,0 +1,17 @@
+#/!bin/bash
+middlefile="middle4.txt"
+file="output4.txt"
+for i in $(ps -A | awk '{print $1}')
+do
+status_file="/proc/"$i"/status"
+shed_file="/proc/"$i"/sched"
+if [[ -r $shed_file && -r $status_file ]]
+then
+ser=$(cat $shed_file | grep se.sum_exec_runtime | awk '{print $3}')
+nrs=$(cat $shed_file | grep nr_switches | awk '{print $3}')
+ppid=$(cat $status_file | grep PPid | awk '{print $2}')
+echo $i $ppid $(bc<<<"scale=6;$ser/$nrs" | awk '{ printf("%f\n", $0) }')
+fi
+done > $middlefile
+cat $middlefile | sort -nk 2 | awk '{print "ProcessID=" $1 " : Parent_ProcessID=" $2 " : Average_Running_Time=" $3}' > $file
+rm $middlefile

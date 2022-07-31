@@ -1,0 +1,21 @@
+#!/bin/bash
+while read name
+do
+if [[ $name == "QUIT" ]]
+	then
+		break
+fi
+t=0
+for pid in $(ls /proc)
+do
+if [[ -r /proc/$pid/comm && $(cat /proc/$pid/comm) == $name ]]
+	then
+		echo $pid
+		t=1
+fi
+done
+if [[ t -eq 0 ]]
+	then
+		echo "process not found"
+fi
+done

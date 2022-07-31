@@ -1,0 +1,4 @@
+#!/bin/bash
+file="output1.txt"
+ps -U root | wc -l > $file
+ps -U root | awk '{print $1 ":" $4}' >> $file

@@ -1,0 +1,33 @@
+#!/bin/bash
+pipe="game.txt"
+>$pipe
+echo "What's your number?"
+read Number
+while true
+do
+	if [[ $(wc -l $pipe | awk '{print $1}')%2 -ne $Number%2 ]]
+		then
+			echo "Your move"
+			while read LINE
+			do
+				if [[ $(wc -l $(cat $pipe | grep $LINE) | awk '{print $1}') -eq 0 ]]
+					then
+						echo $LINE >> pipe
+						break
+					else
+						echo "Not correct"
+				fi
+			done
+		else
+			(tail -f $pipe) | while true
+			do
+				read LINE
+				echo "rival's move: " $LINE
+				break
+			done
+	fi
+	if [[ $(wc -l $pipe | awk '{print $1}') -eq 9 ]]
+		then
+			exit
+	fi
+done

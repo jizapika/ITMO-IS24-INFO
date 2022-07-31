@@ -1,0 +1,8 @@
+#!/bin/bash
+let sum=0
+for i in {1..12}
+do
+let sum+=$1
+shift
+done
+echo $sum
