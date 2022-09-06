@@ -1,0 +1,115 @@
+from matplotlib import pyplot as plt
+from skimage.io import imread, imshow, imsave
+import math
+img = imread('NC2_2.jpg')
+plt.imshow(img)
+plt.show()
+print(img.shape)
+arr = []
+for i in range(128):
+  arr.append(img[64][i])
+for i in range(128):
+  print(arr[i],end=' ')
+  if i%16==15:
+    print()
+print()
+for i in range(128):
+  arr[i]=int(round(arr[i]/20)*20)
+for i in range(128):
+  print(arr[i],end=' ')
+  if i%16==15:
+    print()
+print()
+frequency = []
+for i in range(14):
+  frequency.append(0)
+for i in range(128):
+  frequency[arr[i]//20] += 1
+for i in range(14):
+  print(i*20,'meets',frequency[i],'times')
+print()
+s=0
+print('alphabet:')
+for i in range(14):
+  if frequency[i]:
+    s += 1
+    print(i*20,end=' ')
+print()
+print('quantity of elements is',s)
+print()
+print('one symbol takes',int(math.log(s-1,2)+1),'bits')
+print()
+entropy = 0
+for i in range(14):
+  if frequency[i]:
+    entropy -= math.log(frequency[i]/128,2)*frequency[i]/128
+print('entropy is',entropy)
+print()
+binary_code=[]
+print('uniform binary code:')
+sizeofcode=int(math.log(2*s-1,2))
+for i in range(sizeofcode):
+  binary_code.append(0)
+for i in range(14):
+  if frequency[i]:
+    print(i*20,end=' ')
+    for i in range(sizeofcode):
+      print(binary_code[i],end='')
+    binary_code[sizeofcode-1] += 1;
+    for i in range(sizeofcode-1):
+      binary_code[sizeofcode-i-2] += binary_code[sizeofcode-i-1]//2
+      binary_code[sizeofcode-i-1] %= 2
+    print()
+print()
+shannon_fano_code = [[] for i in range(s)]
+pairfrequency = []
+for i in range(14):
+  if frequency[i]:
+    t = (frequency[i],i)
+    pairfrequency.append(t)
+pairfrequency = sorted(pairfrequency)
+print(pairfrequency)
+t = 1
+while t:
+  if len(shannon_fano_code[0]) == 0:
+    sum = 0
+    for i in range(s):
+      if abs(sum-64) > abs(sum+pairfrequency[i][0]-64):
+        shannon_fano_code[i].append(0)
+      else:
+        shannon_fano_code[i].append(1)
+      sum += pairfrequency[i][0]
+    print(shannon_fano_code)
+  else:
+    sumsegment = shannon_fano_code[0][len(shannon_fano_code[0])-1]
+    sum = 0
+    t = 0
+    for i in range(s-1):
+      u1 = len(shannon_fano_code[i])
+      u2 = len(shannon_fano_code[i+1])
+      if (u1 == u2) and (shannon_fano_code[i][u1-1] == shannon_fano_code[i+1][u2-1]):
+        t = 1
+    left = 0
+    for i in range(1,s-1):
+      u1 = len(shannon_fano_code[left])
+      u2 = len(shannon_fano_code[i])
+      if (u1 == u2) and (shannon_fano_code[left][u1-1] == shannon_fano_code[i][u2-1]):
+        sumsegment += shannon_fano_code[i][u2-1]
+        print(sumsegment)
+      else if left != i-1:
+        for j in range(left,i-1):
+          if abs(2*sum-sumsegment) > abs(2*sum+2*pairfrequency[j][0]-sumsegment):
+            shannon_fano_code[j].append(0)
+          else:
+           shannon_fano_code[j].append(1)
+           sum += pairfrequency[j][0]
+      else:
+	left += 1
+
+    for j in range(left,s-1):
+      if abs(2*sum-sumsegment) > abs(2*sum+2*pairfrequency[j][0]-sumsegment):
+        shannon_fano_code[j].append(0)
+      else:
+       shannon_fano_code[j].append(1)
+       sum += pairfrequency[j][0]
+    print(shannon_fano_code)
