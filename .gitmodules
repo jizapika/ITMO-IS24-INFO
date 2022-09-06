@@ -1,6 +1,6 @@
-[submodule "3 semester/Object-oriented programming/solutions"]
-	path = 3 semester/Object-oriented programming/solutions
-	url = https://github.com/is-oop-y24/jizapika
 [submodule "5 semester/Web Programming/Web-Programming-Course"]
 	path = 5 semester/Web Programming/Web-Programming-Course
 	url = https://github.com/jizapika/Web-Programming-Course
+[submodule "solutions"]
+	path = 3 semester/Object-oriented programming/solutions
+	url = https://github.com/is-oop-y24/jizapika
