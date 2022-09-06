@@ -1,0 +1,6 @@
+[submodule "jizapika"]
+	path = jizapika
+	url = https://github.com/is-oop-y24/jizapika
+[submodule "3 semester/Object-oriented programming/jizapika"]
+	path = 3 semester/Object-oriented programming/jizapika
+	url = https://github.com/is-oop-y24/jizapika
