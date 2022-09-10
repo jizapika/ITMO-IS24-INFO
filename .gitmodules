@@ -5,5 +5,5 @@
 	path = 3 semester/Object-oriented programming/solutions
 	url = https://github.com/is-oop-y24/jizapika
 [submodule "labs"]
-	path = "4 semester/Programming technologies/c# course/jizapika"
+	path = "4 semester/Programming technologies/c# course/labs"
 	url = https://github.com/is-tech-y24-1/jizapika
